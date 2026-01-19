@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Financeiro - Agência de Social MEI</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-800);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            background: white;
+            display: flex;
+            gap: 0;
+            padding: 0 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 1rem 1.5rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-500);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            color: var(--primary);
+            background: var(--gray-50);
+        }
+
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray-500);
+            margin-bottom: 1rem;
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .kpi-value.positive {
+            color: var(--success);
+        }
+
+        .kpi-value.highlight {
+            color: var(--primary);
+        }
+
+        .kpi-subtitle {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+            margin-top: 0.25rem;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        th {
+            background: var(--gray-50);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray-600);
+        }
+
+        tr:hover {
+            background: var(--gray-50);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-badge.ativo {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.inativo {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Plan Badge */
+        .plan-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .plan-badge.basico {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .plan-badge.intermediario {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .plan-badge.premium {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .plan-badge.personalizado {
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        .segment-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .type-badge.fixo {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .type-badge.variavel {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        /* Form Elements */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Section Divider */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin: 1.5rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
+        /* Projection Table */
+        .projection-table {
+            font-size: 0.875rem;
+        }
+
+        .projection-table th,
+        .projection-table td {
+            padding: 0.5rem 0.75rem;
+            text-align: right;
+        }
+
+        .projection-table th:first-child,
+        .projection-table td:first-child {
+            text-align: left;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+            border: 1px solid var(--gray-200);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+        }
+
+        .summary-card h4 {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-bottom: 0.75rem;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .summary-item span:first-child {
+            color: var(--gray-600);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .nav-tab {
+                padding: 0.75rem 1rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-content.active {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Print Styles */
+        @media print {
+            .nav-tabs {
+                display: none;
+            }
+
+            .tab-content {
+                display: block !important;
+                page-break-after: always;
+            }
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+
+        /* Card Header with Actions */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-header .card-title {
+            margin-bottom: 0;
+        }
+
+        /* Action Buttons in Table */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .modal-header h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--gray-400);
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--gray-600);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--gray-200);
+            background: var(--gray-50);
+            border-radius: 0 0 0.75rem 0.75rem;
+        }
+
+        /* Form Select */
+        .form-select {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Confirm Delete Modal */
+        .confirm-text {
+            text-align: center;
+            color: var(--gray-600);
+            margin-bottom: 1rem;
+        }
+
+        .confirm-text strong {
+            color: var(--gray-800);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Dashboard Financeiro</h1>
+        <p>Agencia de Social MEI</p>
+    </header>
+
+    <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
+        <button class="nav-tab" data-tab="premissas">Premissas</button>
+        <button class="nav-tab" data-tab="clientes">Clientes</button>
+        <button class="nav-tab" data-tab="receitas">Receitas</button>
+        <button class="nav-tab" data-tab="custos">Custos</button>
+    </nav>
+
+    <main class="main-content">
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Receita Mensal (MRR)</div>
+                    <div class="kpi-value highlight" id="dash-mrr">R$ 18.500</div>
+                    <div class="kpi-subtitle">Recorrente</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Custo Total Mensal</div>
+                    <div class="kpi-value" id="dash-custos">R$ 5.300</div>
+                    <div class="kpi-subtitle">Fixos + Variaveis</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Lucro Operacional</div>
+                    <div class="kpi-value positive" id="dash-lucro">R$ 13.200</div>
+                    <div class="kpi-subtitle">Receita - Custos</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Margem Operacional</div>
+                    <div class="kpi-value positive" id="dash-margem">71,4%</div>
+                    <div class="kpi-subtitle">Lucro / Receita</div>
+                </div>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Clientes Ativos</div>
+                    <div class="kpi-value" id="dash-clientes-ativos">7</div>
+                    <div class="kpi-subtitle" id="dash-clientes-total">de 8 cadastrados</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Ticket Medio</div>
+                    <div class="kpi-value" id="dash-ticket">R$ 2.643</div>
+                    <div class="kpi-subtitle">por cliente</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">LTV Estimado (12m)</div>
+                    <div class="kpi-value" id="dash-ltv">R$ 30.129</div>
+                    <div class="kpi-subtitle">Valor vitalicio</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Taxa de Retencao</div>
+                    <div class="kpi-value positive" id="dash-retencao">87,5%</div>
+                    <div class="kpi-subtitle">Clientes ativos</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="card">
+                    <div class="card-title">Projecao de Receita vs Custos (12 Meses)</div>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Distribuicao de Receita por Plano</div>
+                    <div class="chart-container">
+                        <canvas id="planChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Projecao 12 Meses</div>
+                <div class="table-container">
+                    <table class="projection-table">
+                        <thead>
+                            <tr>
+                                <th>Metrica</th>
+                                <th>Mes 1</th>
+                                <th>Mes 2</th>
+                                <th>Mes 3</th>
+                                <th>Mes 4</th>
+                                <th>Mes 5</th>
+                                <th>Mes 6</th>
+                                <th>Mes 7</th>
+                                <th>Mes 8</th>
+                                <th>Mes 9</th>
+                                <th>Mes 10</th>
+                                <th>Mes 11</th>
+                                <th>Mes 12</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projection-table-body">
+                            <!-- Rendered by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Receita Total Anual</div>
+                    <div class="kpi-value highlight" id="dash-receita-anual">R$ 222.000</div>
+                    <div class="kpi-subtitle">Projecao 12 meses</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Custo Total Anual</div>
+                    <div class="kpi-value" id="dash-custo-anual">R$ 63.600</div>
+                    <div class="kpi-subtitle">Projecao 12 meses</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Lucro Total Anual</div>
+                    <div class="kpi-value positive" id="dash-lucro-anual">R$ 158.400</div>
+                    <div class="kpi-subtitle">Projecao 12 meses</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Margem Media Anual</div>
+                    <div class="kpi-value positive" id="dash-margem-anual">71,4%</div>
+                    <div class="kpi-subtitle">Consistente</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premissas Tab -->
+        <div id="premissas" class="tab-content">
+            <div class="card">
+                <div class="card-title">Premissas do Modelo Financeiro</div>
+
+                <h3 class="section-title">Crescimento e Churn</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Taxa de Crescimento Mensal de Clientes (%)</label>
+                        <input type="number" class="form-input" value="5.0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Taxa de Churn Mensal (%)</label>
+                        <input type="number" class="form-input" value="3.0" step="0.1">
+                    </div>
+                </div>
+
+                <h3 class="section-title">Custos Operacionais</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Custo por Hora de Trabalho (R$)</label>
+                        <input type="number" class="form-input" value="50" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Horas Medias por Cliente/Mes</label>
+                        <input type="number" class="form-input" value="20" step="1">
+                    </div>
+                </div>
+
+                <h3 class="section-title">Custos Fixos Mensais</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Aluguel e Infraestrutura (R$)</label>
+                        <input type="number" class="form-input" value="3000" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ferramentas e Softwares (R$)</label>
+                        <input type="number" class="form-input" value="800" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Administrativo (R$)</label>
+                        <input type="number" class="form-input" value="1500" step="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Marketing Proprio (R$)</label>
+                        <input type="number" class="form-input" value="500" step="100">
+                    </div>
+                </div>
+
+                <h3 class="section-title">Impostos e Taxas</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Simples Nacional / Impostos (%)</label>
+                        <input type="number" class="form-input" value="6.0" step="0.1">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clientes Tab -->
+        <div id="clientes" class="tab-content">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Cadastrados</div>
+                    <div class="kpi-value" id="kpi-total">8</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Clientes Ativos</div>
+                    <div class="kpi-value positive" id="kpi-ativos">7</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Clientes Inativos</div>
+                    <div class="kpi-value" style="color: var(--danger)" id="kpi-inativos">1</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Taxa de Retencao</div>
+                    <div class="kpi-value positive" id="kpi-retencao">87,5%</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Lista de Clientes</div>
+                    <button class="btn btn-primary" onclick="openAddClientModal()">
+                        + Novo Cliente
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Segmento</th>
+                                <th>Plano</th>
+                                <th>Valor Mensal</th>
+                                <th>Data Inicio</th>
+                                <th>Status</th>
+                                <th>Observacoes</th>
+                                <th>Acoes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clients-table-body">
+                            <!-- Rendered by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Receitas Tab -->
+        <div id="receitas" class="tab-content">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Receita Recorrente Mensal</div>
+                    <div class="kpi-value highlight" id="rec-mrr">R$ 18.500</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Total Clientes Ativos</div>
+                    <div class="kpi-value" id="rec-clientes">7</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Ticket Medio</div>
+                    <div class="kpi-value" id="rec-ticket">R$ 2.643</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Taxa de Retencao</div>
+                    <div class="kpi-value positive" id="rec-retencao">87,5%</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="card">
+                    <div class="card-title">Receita por Plano</div>
+                    <div class="chart-container">
+                        <canvas id="revenueByPlanChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Distribuicao de Clientes por Plano</div>
+                    <div class="chart-container">
+                        <canvas id="clientsByPlanChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Detalhamento de Receita por Plano</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Plano</th>
+                                <th>Clientes Ativos</th>
+                                <th>Valor Medio</th>
+                                <th>Receita Mensal</th>
+                                <th>% do Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receitas-table-body">
+                            <!-- Rendered by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custos Tab -->
+        <div id="custos" class="tab-content">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Custo Total Mensal</div>
+                    <div class="kpi-value" id="cust-total">R$ 5.300</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Custos Fixos</div>
+                    <div class="kpi-value" id="cust-fixos">R$ 5.300</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Custos Variaveis</div>
+                    <div class="kpi-value" id="cust-variaveis">R$ 0</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Custo por Cliente</div>
+                    <div class="kpi-value" id="cust-por-cliente">R$ 757</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Lista de Custos</div>
+                    <button class="btn btn-primary" onclick="openAddCostModal()">
+                        + Novo Custo
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Descricao</th>
+                                <th>Categoria</th>
+                                <th>Tipo</th>
+                                <th>Valor Mensal</th>
+                                <th>Acoes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="costs-table-body">
+                            <!-- Rendered by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="card">
+                    <div class="card-title">Distribuicao de Custos por Categoria</div>
+                    <div class="chart-container">
+                        <canvas id="costsChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Receita vs Custos vs Lucro</div>
+                    <div class="chart-container">
+                        <canvas id="profitChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <h4>Resumo por Tipo</h4>
+                    <div class="summary-item">
+                        <span>Custos Fixos</span>
+                        <span id="cust-fixos-total">R$ 5.300</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Custos Variaveis</span>
+                        <span id="cust-variaveis-total">R$ 0</span>
+                    </div>
+                    <div class="summary-item" style="font-weight: 600; border-top: 1px solid #e5e7eb; padding-top: 0.5rem;">
+                        <span>Total</span>
+                        <span id="cust-total-resumo">R$ 5.300</span>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h4>Custos por Categoria</h4>
+                    <div id="costs-by-category">
+                        <!-- Rendered by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h4>Resumo Financeiro</h4>
+                    <div class="summary-item">
+                        <span>Receita Mensal</span>
+                        <span id="cust-receita">R$ 18.500</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>(-) Custos Totais</span>
+                        <span id="cust-custos">R$ 5.300</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>(=) Lucro Operacional</span>
+                        <span style="color: var(--success)" id="cust-lucro">R$ 13.200</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Adicionar/Editar Cliente -->
+    <div class="modal-overlay" id="client-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Novo Cliente</h3>
+                <button class="modal-close" onclick="closeClientModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="client-form">
+                    <input type="hidden" id="client-id">
+                    <div class="form-group">
+                        <label class="form-label">Nome do Cliente *</label>
+                        <input type="text" class="form-input" id="client-nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Segmento *</label>
+                        <select class="form-select" id="client-segmento" required>
+                            <option value="">Selecione um segmento</option>
+                            <option value="Alimentacao">Alimentação</option>
+                            <option value="Varejo">Varejo</option>
+                            <option value="Saude">Saúde</option>
+                            <option value="Fitness">Fitness</option>
+                            <option value="Servicos">Serviços</option>
+                            <option value="Beleza">Beleza</option>
+                            <option value="Pet">Pet</option>
+                            <option value="Educacao">Educação</option>
+                            <option value="Tecnologia">Tecnologia</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Plano *</label>
+                        <select class="form-select" id="client-plano" required onchange="updateValorByPlano()">
+                            <option value="">Selecione um plano</option>
+                            <option value="Basico">Basico - R$ 1.500</option>
+                            <option value="Intermediario">Intermediario - R$ 2.500</option>
+                            <option value="Premium">Premium - R$ 4.000</option>
+                            <option value="Personalizado">Personalizado - Valor livre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Valor Mensal (R$) *</label>
+                        <input type="number" class="form-input" id="client-valor" required step="100" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data de Inicio *</label>
+                        <input type="date" class="form-input" id="client-data" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status *</label>
+                        <select class="form-select" id="client-status" required>
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Observacoes</label>
+                        <input type="text" class="form-input" id="client-obs" placeholder="Ex: Instagram + Facebook">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeClientModal()">Cancelar</button>
+                <button class="btn btn-success" onclick="saveClient()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmacao de Exclusao de Cliente -->
+    <div class="modal-overlay" id="delete-modal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Confirmar Exclusao</h3>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="confirm-text">
+                    Tem certeza que deseja excluir o cliente<br>
+                    <strong id="delete-client-name"></strong>?
+                </p>
+                <p class="confirm-text" style="font-size: 0.875rem;">
+                    Esta acao nao pode ser desfeita.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Adicionar/Editar Custo -->
+    <div class="modal-overlay" id="cost-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="cost-modal-title">Novo Custo</h3>
+                <button class="modal-close" onclick="closeCostModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="cost-form">
+                    <input type="hidden" id="cost-id">
+                    <div class="form-group">
+                        <label class="form-label">Descricao *</label>
+                        <input type="text" class="form-input" id="cost-descricao" required placeholder="Ex: Assinatura de software">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Categoria *</label>
+                        <select class="form-select" id="cost-categoria" required>
+                            <option value="">Selecione uma categoria</option>
+                            <option value="Ferramentas e Softwares">Ferramentas e Softwares</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Administrativo">Administrativo</option>
+                            <option value="Infraestrutura">Infraestrutura</option>
+                            <option value="Pessoal">Pessoal</option>
+                            <option value="Impostos">Impostos</option>
+                            <option value="Servicos Terceiros">Serviços Terceiros</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo *</label>
+                        <select class="form-select" id="cost-tipo" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="Fixo">Fixo</option>
+                            <option value="Variavel">Variável</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Valor Mensal (R$) *</label>
+                        <input type="number" class="form-input" id="cost-valor" required step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Observacoes</label>
+                        <input type="text" class="form-input" id="cost-obs" placeholder="Ex: Pagamento anual">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCostModal()">Cancelar</button>
+                <button class="btn btn-success" onclick="saveCost()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmacao de Exclusao de Custo -->
+    <div class="modal-overlay" id="delete-cost-modal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Confirmar Exclusao</h3>
+                <button class="modal-close" onclick="closeDeleteCostModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="confirm-text">
+                    Tem certeza que deseja excluir o custo<br>
+                    <strong id="delete-cost-name"></strong>?
+                </p>
+                <p class="confirm-text" style="font-size: 0.875rem;">
+                    Esta acao nao pode ser desfeita.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteCostModal()">Cancelar</button>
+                <button class="btn btn-danger" onclick="confirmDeleteCost()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Navigation
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ==========================================
+        // DATA & CONSTANTS
+        // ==========================================
+
+        const HORAS_POR_CLIENTE = 20;
+        const STORAGE_KEY_CLIENTS = 'agencia_social_mei_clients_v3';
+        const STORAGE_KEY_COSTS = 'agencia_social_mei_costs_v1';
+
+        const defaultClients = [
+            { id: 1, nome: 'Restaurante Sabor', segmento: 'Alimentacao', plano: 'Basico', valor: 1500, dataInicio: '2024-01-15', status: 'Ativo', obs: 'Instagram + Facebook' },
+            { id: 2, nome: 'Loja Fashion', segmento: 'Varejo', plano: 'Intermediario', valor: 2500, dataInicio: '2024-02-01', status: 'Ativo', obs: 'Todas as redes' },
+            { id: 3, nome: 'Clinica Saude+', segmento: 'Saude', plano: 'Premium', valor: 4000, dataInicio: '2024-03-10', status: 'Ativo', obs: 'Gestao completa + Ads' },
+            { id: 4, nome: 'Academia Fit', segmento: 'Fitness', plano: 'Basico', valor: 1500, dataInicio: '2024-04-01', status: 'Ativo', obs: 'Instagram' },
+            { id: 5, nome: 'Escritorio Advocacia', segmento: 'Servicos', plano: 'Intermediario', valor: 2500, dataInicio: '2024-05-15', status: 'Ativo', obs: 'LinkedIn + Instagram' },
+            { id: 6, nome: 'Padaria Central', segmento: 'Alimentacao', plano: 'Basico', valor: 1500, dataInicio: '2024-06-01', status: 'Inativo', obs: 'Cancelou' },
+            { id: 7, nome: 'Pet Shop Amigo', segmento: 'Pet', plano: 'Premium', valor: 4000, dataInicio: '2024-07-01', status: 'Ativo', obs: 'Gestao completa' },
+            { id: 8, nome: 'Salao Beleza', segmento: 'Beleza', plano: 'Intermediario', valor: 2500, dataInicio: '2024-08-01', status: 'Ativo', obs: 'Instagram + TikTok' }
+        ];
+
+        const defaultCosts = [
+            { id: 1, descricao: 'Ferramentas de Design (Canva, Adobe)', categoria: 'Ferramentas e Softwares', tipo: 'Fixo', valor: 1500, obs: 'Licenças anuais' },
+            { id: 2, descricao: 'Ferramentas de Agendamento', categoria: 'Ferramentas e Softwares', tipo: 'Fixo', valor: 800, obs: 'MLabs, Hootsuite' },
+            { id: 3, descricao: 'Ferramentas de Analytics', categoria: 'Ferramentas e Softwares', tipo: 'Fixo', valor: 700, obs: 'Relatórios e métricas' },
+            { id: 4, descricao: 'Marketing Proprio', categoria: 'Marketing', tipo: 'Fixo', valor: 1500, obs: 'Anúncios da agência' },
+            { id: 5, descricao: 'Contador e Administrativo', categoria: 'Administrativo', tipo: 'Fixo', valor: 800, obs: 'Contabilidade mensal' }
+        ];
+
+        // ==========================================
+        // LOCAL STORAGE PERSISTENCE
+        // ==========================================
+
+        function saveClients() {
+            localStorage.setItem(STORAGE_KEY_CLIENTS, JSON.stringify(clients));
+        }
+
+        function loadClients() {
+            const stored = localStorage.getItem(STORAGE_KEY_CLIENTS);
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch (e) {
+                    console.error('Erro ao carregar dados:', e);
+                    return [...defaultClients];
+                }
+            }
+            return [...defaultClients];
+        }
+
+        function saveCosts() {
+            localStorage.setItem(STORAGE_KEY_COSTS, JSON.stringify(costs));
+        }
+
+        function loadCosts() {
+            const stored = localStorage.getItem(STORAGE_KEY_COSTS);
+            if (stored) {
+                try {
+                    return JSON.parse(stored);
+                } catch (e) {
+                    console.error('Erro ao carregar custos:', e);
+                    return [...defaultCosts];
+                }
+            }
+            return [...defaultCosts];
+        }
+
+        let clients = loadClients();
+        let costs = loadCosts();
+        let deleteClientId = null;
+        let deleteCostId = null;
+        let revenueChart, planChart, revenueByPlanChart, clientsByPlanChart, costsChart, profitChart;
+
+        // ==========================================
+        // UTILITY FUNCTIONS
+        // ==========================================
+
+        function formatCurrency(value) {
+            return 'R$ ' + value.toLocaleString('pt-BR');
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function getPlanClass(plano) {
+            return plano.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+
+        // ==========================================
+        // METRICS CALCULATION
+        // ==========================================
+
+        function calculateMetrics() {
+            const activeClients = clients.filter(c => c.status === 'Ativo');
+            const totalClients = clients.length;
+            const activeCount = activeClients.length;
+            const inactiveCount = totalClients - activeCount;
+
+            const mrr = activeClients.reduce((sum, c) => sum + c.valor, 0);
+
+            // Custos dinamicos
+            const custosFixos = costs.filter(c => c.tipo === 'Fixo').reduce((sum, c) => sum + c.valor, 0);
+            const custosVariaveis = costs.filter(c => c.tipo === 'Variavel').reduce((sum, c) => sum + c.valor, 0);
+            const custosTotais = custosFixos + custosVariaveis;
+
+            // Custos por categoria
+            const custosPorCategoria = {};
+            costs.forEach(c => {
+                if (!custosPorCategoria[c.categoria]) {
+                    custosPorCategoria[c.categoria] = 0;
+                }
+                custosPorCategoria[c.categoria] += c.valor;
+            });
+
+            const lucro = mrr - custosTotais;
+            const margem = mrr > 0 ? (lucro / mrr * 100) : 0;
+            const ticket = activeCount > 0 ? mrr / activeCount : 0;
+            const retencao = totalClients > 0 ? (activeCount / totalClients * 100) : 0;
+            const ltv = ticket * 12 * (retencao / 100);
+            const custoCliente = activeCount > 0 ? custosTotais / activeCount : 0;
+            const horasTrabalhadas = activeCount * HORAS_POR_CLIENTE;
+
+            // Receita por plano
+            const planos = ['Basico', 'Intermediario', 'Premium', 'Personalizado'];
+            const receitaPorPlano = {};
+            const clientesPorPlano = {};
+
+            planos.forEach(plano => {
+                const clientesPlano = activeClients.filter(c => c.plano === plano);
+                clientesPorPlano[plano] = clientesPlano.length;
+                receitaPorPlano[plano] = clientesPlano.reduce((sum, c) => sum + c.valor, 0);
+            });
+
+            return {
+                totalClients,
+                activeCount,
+                inactiveCount,
+                mrr,
+                custos: custosTotais,
+                custosFixos,
+                custosVariaveis,
+                custosPorCategoria,
+                lucro,
+                margem,
+                ticket,
+                retencao,
+                ltv,
+                custoCliente,
+                horasTrabalhadas,
+                receitaPorPlano,
+                clientesPorPlano
+            };
+        }
+
+        // ==========================================
+        // UPDATE ALL VIEWS
+        // ==========================================
+
+        function updateAllViews() {
+            const m = calculateMetrics();
+
+            // === CLIENTES TAB ===
+            document.getElementById('kpi-total').textContent = m.totalClients;
+            document.getElementById('kpi-ativos').textContent = m.activeCount;
+            document.getElementById('kpi-inativos').textContent = m.inactiveCount;
+            document.getElementById('kpi-retencao').textContent = m.retencao.toFixed(1) + '%';
+
+            // === DASHBOARD TAB ===
+            document.getElementById('dash-mrr').textContent = formatCurrency(m.mrr);
+            document.getElementById('dash-custos').textContent = formatCurrency(m.custos);
+            document.getElementById('dash-lucro').textContent = formatCurrency(m.lucro);
+            document.getElementById('dash-margem').textContent = m.margem.toFixed(1) + '%';
+            document.getElementById('dash-clientes-ativos').textContent = m.activeCount;
+            document.getElementById('dash-clientes-total').textContent = `de ${m.totalClients} cadastrados`;
+            document.getElementById('dash-ticket').textContent = formatCurrency(Math.round(m.ticket));
+            document.getElementById('dash-ltv').textContent = formatCurrency(Math.round(m.ltv));
+            document.getElementById('dash-retencao').textContent = m.retencao.toFixed(1) + '%';
+            document.getElementById('dash-receita-anual').textContent = formatCurrency(m.mrr * 12);
+            document.getElementById('dash-custo-anual').textContent = formatCurrency(m.custos * 12);
+            document.getElementById('dash-lucro-anual').textContent = formatCurrency(m.lucro * 12);
+            document.getElementById('dash-margem-anual').textContent = m.margem.toFixed(1) + '%';
+
+            // Projection table
+            renderProjectionTable(m);
+
+            // === RECEITAS TAB ===
+            document.getElementById('rec-mrr').textContent = formatCurrency(m.mrr);
+            document.getElementById('rec-clientes').textContent = m.activeCount;
+            document.getElementById('rec-ticket').textContent = formatCurrency(Math.round(m.ticket));
+            document.getElementById('rec-retencao').textContent = m.retencao.toFixed(1) + '%';
+            renderReceitasTable(m);
+
+            // === CUSTOS TAB ===
+            document.getElementById('cust-total').textContent = formatCurrency(m.custos);
+            document.getElementById('cust-fixos').textContent = formatCurrency(m.custosFixos);
+            document.getElementById('cust-variaveis').textContent = formatCurrency(m.custosVariaveis);
+            document.getElementById('cust-por-cliente').textContent = formatCurrency(Math.round(m.custoCliente));
+            document.getElementById('cust-fixos-total').textContent = formatCurrency(m.custosFixos);
+            document.getElementById('cust-variaveis-total').textContent = formatCurrency(m.custosVariaveis);
+            document.getElementById('cust-total-resumo').textContent = formatCurrency(m.custos);
+            document.getElementById('cust-receita').textContent = formatCurrency(m.mrr);
+            document.getElementById('cust-custos').textContent = formatCurrency(m.custos);
+            document.getElementById('cust-lucro').textContent = formatCurrency(m.lucro);
+            renderCostsByCategory(m);
+
+            // Update all charts
+            updateCharts(m);
+        }
+
+        function renderProjectionTable(m) {
+            const tbody = document.getElementById('projection-table-body');
+            const months = Array(12).fill(0);
+
+            tbody.innerHTML = `
+                <tr>
+                    <td>Clientes</td>
+                    ${months.map(() => `<td>${m.activeCount}</td>`).join('')}
+                </tr>
+                <tr>
+                    <td>Receita</td>
+                    ${months.map(() => `<td>${formatCurrency(m.mrr)}</td>`).join('')}
+                </tr>
+                <tr>
+                    <td>Custos</td>
+                    ${months.map(() => `<td>${formatCurrency(m.custos)}</td>`).join('')}
+                </tr>
+                <tr style="font-weight: 600; color: var(--success);">
+                    <td>Lucro</td>
+                    ${months.map(() => `<td>${formatCurrency(m.lucro)}</td>`).join('')}
+                </tr>
+            `;
+        }
+
+        function renderReceitasTable(m) {
+            const tbody = document.getElementById('receitas-table-body');
+            const planos = ['Basico', 'Intermediario', 'Premium', 'Personalizado'];
+            const colors = { Basico: 'basico', Intermediario: 'intermediario', Premium: 'premium', Personalizado: 'personalizado' };
+
+            let rows = '';
+            planos.forEach(plano => {
+                const qtd = m.clientesPorPlano[plano];
+                const receita = m.receitaPorPlano[plano];
+                if (qtd > 0) {
+                    const valorMedio = receita / qtd;
+                    const percent = m.mrr > 0 ? (receita / m.mrr * 100).toFixed(1) : 0;
+                    rows += `
+                        <tr>
+                            <td><span class="plan-badge ${colors[plano]}">${plano}</span></td>
+                            <td>${qtd}</td>
+                            <td>${formatCurrency(Math.round(valorMedio))}</td>
+                            <td>${formatCurrency(receita)}</td>
+                            <td>${percent}%</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            rows += `
+                <tr style="font-weight: 600; background: var(--gray-50);">
+                    <td>TOTAL</td>
+                    <td>${m.activeCount}</td>
+                    <td>-</td>
+                    <td>${formatCurrency(m.mrr)}</td>
+                    <td>100%</td>
+                </tr>
+            `;
+
+            tbody.innerHTML = rows;
+        }
+
+        function renderCostsTable() {
+            const tbody = document.getElementById('costs-table-body');
+            tbody.innerHTML = costs.map(cost => `
+                <tr>
+                    <td>${cost.id}</td>
+                    <td>${cost.descricao}</td>
+                    <td><span class="category-badge">${cost.categoria}</span></td>
+                    <td><span class="type-badge ${cost.tipo.toLowerCase()}">${cost.tipo}</span></td>
+                    <td>${formatCurrency(cost.valor)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary btn-sm" onclick="openEditCostModal(${cost.id})">Editar</button>
+                            <button class="btn btn-danger btn-sm" onclick="openDeleteCostModal(${cost.id})">Excluir</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            updateAllViews();
+        }
+
+        function renderCostsByCategory(m) {
+            const container = document.getElementById('costs-by-category');
+            let html = '';
+
+            const categorias = Object.keys(m.custosPorCategoria).sort();
+            categorias.forEach(cat => {
+                const valor = m.custosPorCategoria[cat];
+                const percent = m.custos > 0 ? (valor / m.custos * 100).toFixed(1) : 0;
+                html += `
+                    <div class="summary-item">
+                        <span>${cat}</span>
+                        <span>${formatCurrency(valor)} (${percent}%)</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // ==========================================
+        // CHARTS
+        // ==========================================
+
+        function updateCharts(m) {
+            const planos = ['Basico', 'Intermediario', 'Premium', 'Personalizado'];
+            const planosAtivos = planos.filter(p => m.clientesPorPlano[p] > 0);
+            const receitaData = planosAtivos.map(p => m.receitaPorPlano[p]);
+            const clientesData = planosAtivos.map(p => m.clientesPorPlano[p]);
+            const colors = ['#818cf8', '#fbbf24', '#a78bfa', '#34d399'];
+            const planosColors = planosAtivos.map((_, i) => colors[i % colors.length]);
+
+            // Revenue Chart (12 months projection)
+            const mrrArray = Array(12).fill(m.mrr);
+            const custosArray = Array(12).fill(m.custos);
+            const lucroArray = Array(12).fill(m.lucro);
+
+            revenueChart.data.datasets[0].data = mrrArray;
+            revenueChart.data.datasets[1].data = custosArray;
+            revenueChart.data.datasets[2].data = lucroArray;
+            revenueChart.update();
+
+            // Plan Distribution (Dashboard)
+            planChart.data.labels = planosAtivos;
+            planChart.data.datasets[0].data = receitaData;
+            planChart.data.datasets[0].backgroundColor = planosColors;
+            planChart.update();
+
+            // Revenue by Plan Bar Chart
+            revenueByPlanChart.data.labels = planosAtivos;
+            revenueByPlanChart.data.datasets[0].data = receitaData;
+            revenueByPlanChart.data.datasets[0].backgroundColor = planosColors;
+            revenueByPlanChart.update();
+
+            // Clients by Plan Chart
+            clientsByPlanChart.data.labels = planosAtivos.map(p => `${p} (${m.clientesPorPlano[p]})`);
+            clientsByPlanChart.data.datasets[0].data = clientesData;
+            clientsByPlanChart.data.datasets[0].backgroundColor = planosColors;
+            clientsByPlanChart.update();
+
+            // Costs Chart (by category)
+            const categorias = Object.keys(m.custosPorCategoria);
+            const custosData = categorias.map(c => m.custosPorCategoria[c]);
+            const custosColors = ['#3b82f6', '#f59e0b', '#8b5cf6', '#6b7280', '#10b981', '#ef4444', '#ec4899', '#14b8a6'];
+
+            costsChart.data.labels = categorias;
+            costsChart.data.datasets[0].data = custosData;
+            costsChart.data.datasets[0].backgroundColor = custosColors.slice(0, categorias.length);
+            costsChart.update();
+
+            // Profit Chart
+            profitChart.data.datasets[0].data = [m.mrr];
+            profitChart.data.datasets[1].data = [m.custos];
+            profitChart.data.datasets[2].data = [m.lucro];
+            profitChart.update();
+        }
+
+        function initCharts() {
+            Chart.defaults.font.family = "'Segoe UI', system-ui, -apple-system, sans-serif";
+            Chart.defaults.color = '#6b7280';
+
+            revenueChart = new Chart(document.getElementById('revenueChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Mes 1', 'Mes 2', 'Mes 3', 'Mes 4', 'Mes 5', 'Mes 6', 'Mes 7', 'Mes 8', 'Mes 9', 'Mes 10', 'Mes 11', 'Mes 12'],
+                    datasets: [
+                        { label: 'Receita', data: [], borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)', fill: true, tension: 0.3 },
+                        { label: 'Custos', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.3 },
+                        { label: 'Lucro', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } } }
+                }
+            });
+
+            planChart = new Chart(document.getElementById('planChart'), {
+                type: 'doughnut',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            revenueByPlanChart = new Chart(document.getElementById('revenueByPlanChart'), {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Receita Mensal', data: [], backgroundColor: [], borderRadius: 8 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } } }
+                }
+            });
+
+            clientsByPlanChart = new Chart(document.getElementById('clientsByPlanChart'), {
+                type: 'pie',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            costsChart = new Chart(document.getElementById('costsChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            profitChart = new Chart(document.getElementById('profitChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Financeiro Mensal'],
+                    datasets: [
+                        { label: 'Receita', data: [], backgroundColor: '#2563eb', borderRadius: 8 },
+                        { label: 'Custos', data: [], backgroundColor: '#ef4444', borderRadius: 8 },
+                        { label: 'Lucro', data: [], backgroundColor: '#10b981', borderRadius: 8 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } } }
+                }
+            });
+        }
+
+        // ==========================================
+        // CLIENTS CRUD
+        // ==========================================
+
+        function renderClientsTable() {
+            const tbody = document.getElementById('clients-table-body');
+            tbody.innerHTML = clients.map(client => `
+                <tr>
+                    <td>${client.id}</td>
+                    <td>${client.nome}</td>
+                    <td><span class="segment-badge">${client.segmento || '-'}</span></td>
+                    <td><span class="plan-badge ${getPlanClass(client.plano)}">${client.plano}</span></td>
+                    <td>${formatCurrency(client.valor)}</td>
+                    <td>${formatDate(client.dataInicio)}</td>
+                    <td><span class="status-badge ${client.status.toLowerCase()}">${client.status}</span></td>
+                    <td>${client.obs || '-'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary btn-sm" onclick="openEditClientModal(${client.id})">Editar</button>
+                            <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${client.id})">Excluir</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            updateAllViews();
+        }
+
+        function openAddClientModal() {
+            document.getElementById('modal-title').textContent = 'Novo Cliente';
+            document.getElementById('client-form').reset();
+            document.getElementById('client-id').value = '';
+            document.getElementById('client-modal').classList.add('active');
+        }
+
+        function openEditClientModal(id) {
+            const client = clients.find(c => c.id === id);
+            if (!client) return;
+            document.getElementById('modal-title').textContent = 'Editar Cliente';
+            document.getElementById('client-id').value = client.id;
+            document.getElementById('client-nome').value = client.nome;
+            document.getElementById('client-segmento').value = client.segmento || '';
+            document.getElementById('client-plano').value = client.plano;
+            document.getElementById('client-valor').value = client.valor;
+            document.getElementById('client-data').value = client.dataInicio;
+            document.getElementById('client-status').value = client.status;
+            document.getElementById('client-obs').value = client.obs || '';
+            document.getElementById('client-modal').classList.add('active');
+        }
+
+        function closeClientModal() {
+            document.getElementById('client-modal').classList.remove('active');
+        }
+
+        function updateValorByPlano() {
+            const plano = document.getElementById('client-plano').value;
+            const valorInput = document.getElementById('client-valor');
+            const valores = { 'Basico': 1500, 'Intermediario': 2500, 'Premium': 4000 };
+            if (valores[plano]) {
+                valorInput.value = valores[plano];
+            } else if (plano === 'Personalizado') {
+                valorInput.value = '';
+                valorInput.focus();
+            }
+        }
+
+        function saveClient() {
+            const form = document.getElementById('client-form');
+            if (!form.checkValidity()) { form.reportValidity(); return; }
+            const id = document.getElementById('client-id').value;
+            const clientData = {
+                nome: document.getElementById('client-nome').value,
+                segmento: document.getElementById('client-segmento').value,
+                plano: document.getElementById('client-plano').value,
+                valor: parseFloat(document.getElementById('client-valor').value),
+                dataInicio: document.getElementById('client-data').value,
+                status: document.getElementById('client-status').value,
+                obs: document.getElementById('client-obs').value
+            };
+            if (id) {
+                const index = clients.findIndex(c => c.id === parseInt(id));
+                if (index !== -1) clients[index] = { ...clients[index], ...clientData };
+            } else {
+                const newId = Math.max(...clients.map(c => c.id), 0) + 1;
+                clients.push({ id: newId, ...clientData });
+            }
+            saveClients();
+            renderClientsTable();
+            closeClientModal();
+        }
+
+        function openDeleteModal(id) {
+            const client = clients.find(c => c.id === id);
+            if (!client) return;
+            deleteClientId = id;
+            document.getElementById('delete-client-name').textContent = client.nome;
+            document.getElementById('delete-modal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.remove('active');
+            deleteClientId = null;
+        }
+
+        function confirmDelete() {
+            if (deleteClientId !== null) {
+                clients = clients.filter(c => c.id !== deleteClientId);
+                saveClients();
+                renderClientsTable();
+                closeDeleteModal();
+            }
+        }
+
+        // ==========================================
+        // COSTS CRUD
+        // ==========================================
+
+        function openAddCostModal() {
+            document.getElementById('cost-modal-title').textContent = 'Novo Custo';
+            document.getElementById('cost-form').reset();
+            document.getElementById('cost-id').value = '';
+            document.getElementById('cost-modal').classList.add('active');
+        }
+
+        function openEditCostModal(id) {
+            const cost = costs.find(c => c.id === id);
+            if (!cost) return;
+            document.getElementById('cost-modal-title').textContent = 'Editar Custo';
+            document.getElementById('cost-id').value = cost.id;
+            document.getElementById('cost-descricao').value = cost.descricao;
+            document.getElementById('cost-categoria').value = cost.categoria;
+            document.getElementById('cost-tipo').value = cost.tipo;
+            document.getElementById('cost-valor').value = cost.valor;
+            document.getElementById('cost-obs').value = cost.obs || '';
+            document.getElementById('cost-modal').classList.add('active');
+        }
+
+        function closeCostModal() {
+            document.getElementById('cost-modal').classList.remove('active');
+        }
+
+        function saveCost() {
+            const form = document.getElementById('cost-form');
+            if (!form.checkValidity()) { form.reportValidity(); return; }
+            const id = document.getElementById('cost-id').value;
+            const costData = {
+                descricao: document.getElementById('cost-descricao').value,
+                categoria: document.getElementById('cost-categoria').value,
+                tipo: document.getElementById('cost-tipo').value,
+                valor: parseFloat(document.getElementById('cost-valor').value),
+                obs: document.getElementById('cost-obs').value
+            };
+            if (id) {
+                const index = costs.findIndex(c => c.id === parseInt(id));
+                if (index !== -1) costs[index] = { ...costs[index], ...costData };
+            } else {
+                const newId = Math.max(...costs.map(c => c.id), 0) + 1;
+                costs.push({ id: newId, ...costData });
+            }
+            saveCosts();
+            renderCostsTable();
+            closeCostModal();
+        }
+
+        function openDeleteCostModal(id) {
+            const cost = costs.find(c => c.id === id);
+            if (!cost) return;
+            deleteCostId = id;
+            document.getElementById('delete-cost-name').textContent = cost.descricao;
+            document.getElementById('delete-cost-modal').classList.add('active');
+        }
+
+        function closeDeleteCostModal() {
+            document.getElementById('delete-cost-modal').classList.remove('active');
+            deleteCostId = null;
+        }
+
+        function confirmDeleteCost() {
+            if (deleteCostId !== null) {
+                costs = costs.filter(c => c.id !== deleteCostId);
+                saveCosts();
+                renderCostsTable();
+                closeDeleteCostModal();
+            }
+        }
+
+        // Modal events
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('active');
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            renderClientsTable();
+            renderCostsTable();
+        });
+    </script>
+</body>
+</html>
